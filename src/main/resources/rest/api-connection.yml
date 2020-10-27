@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+  title: Connections
+  version: '1.0'
+  description: Describes endpoints for managing DB connections
+  contact:
+    name: Michal Kasal
+  license:
+    url: 'https://creativecommons.org/licenses/by-nc-nd/4.0/'
+    name: CC BY-NC-ND 4.0
+servers:
+  - url: 'localhost:8080'
+components:
+  schemas:
+    ConnectionDTO:
+      title: ConnectionDTO
+      type: object
+      description: Describes database connection object
+      x-examples:
+        first_example:
+          id: 476
+          name: EXAMPLE CRM PROD
+          hostname: example.com
+          port: 12345
+          databaseName: crmdb
+          username: admin
+          password: pa$$word
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID of resource
+        name:
+          type: string
+          example: Core banking system - production
+          minLength: 3
+          maxLength: 255
+          description: Name of stored DB connection
+        hostname:
+          type: string
+          format: hostname
+          example: example.com
+          description: Hostname or IP address
+        port:
+          type: integer
+          description: Port number where DB accepts connections
+          minimum: 1
+          maximum: 65535
+          example: 5431
+        databaseName:
+          type: string
+          maxLength: 63
+          minLength: 1
+        username:
+          type: string
+          maxLength: 63
+          minLength: 1
+        password:
+          type: string
+          format: password
+      required:
+        - name
+        - hostname
+        - port
+        - databaseName
+        - username
+        - password
+    ApiExceptionDTO:
+      title: ApiErrorDTO
+      type: object
+      description: Represents error that occured during processing of request
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+paths:
+  '/connections/{connectionID}':
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+        name: connectionID
+        in: path
+        description: Connection ID stored in database
+        required: true
+    get:
+      summary: Get DB connection details by ID
+      tags:
+        - Connection
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDTO'
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionDTO'
+      operationId: get-connections-connectionID
+      description: Returns details about database connection specified by its ID
+    put:
+      summary: Update DB connection
+      operationId: put-connections-connectionID
+      responses:
+        '200':
+          description: OK
+        '201':
+          description: Created - new DB connection is stored
+          links:
+            GetConnectionByConnectionID:
+              operationId: get-connections-connectionID
+              parameters:
+                connectionID: $response.body#/id
+              description: 'The `id` value returned in the response can be used as the `connectionID` parameter in `GET /connections/{connectionId}`.'
+        '400':
+          description: Bad Request - malformed request that DO NOT comfor with validations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionDTO'
+        '409':
+          description: Conflict - Update voilates DB constraints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionDTO'
+      description: Updates DB connection specified by ID
+      tags:
+        - Connection
+    delete:
+      summary: Delete DB connection by ID
+      operationId: delete-connections-connectionID
+      responses:
+        '204':
+          description: OK
+      description: Deletes DB connection specified by ID
+      tags:
+        - Connection
+  /connections:
+    post:
+      summary: Create DB connection
+      operationId: post-connections
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDTO'
+          links:
+            GetConnectionByConnectionID:
+              operationId: get-connections-connectionID
+              parameters:
+                connectionID: $response.body#/id
+              description: 'The `id` value returned in the response can be used as the `connectionID` parameter in `GET /connections/{connectionId}`.'
+        '400':
+          description: Bad Request - request validations has failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionDTO'
+        '409':
+          description: Conflict - creation of resource voilates DB constraints - ie name exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiExceptionDTO'
+      description: Creates new DB connection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionDTO'
+        description: DB Connection details
+      tags:
+        - Connection
+tags:
+  - name: Connection
