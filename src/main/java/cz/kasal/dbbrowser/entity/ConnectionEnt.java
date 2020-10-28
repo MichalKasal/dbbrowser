@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 @Data
 @Entity
@@ -19,22 +21,25 @@ public class ConnectionEnt {
     @Column(name = "ID")
     private Long id;
 
-    @Column(name = "NAME")
+    @Min(3)
+    @Column(name = "NAME", unique = true)
     private String name;
 
     @Column(name = "HOSTNAME")
     private String hostname;
 
+    @Min(1)
+    @Max(65535)
     @Column(name = "PORT")
     private Integer port;
 
-    @Column(name = "DATABASE_NAME")
+    @Column(name = "DATABASE_NAME", length = 63)
     private String databaseName;
 
-    @Column(name = "USERNAME")
+    @Column(name = "USERNAME", length = 63)
     private String username;
 
-    @Column(name  = "PASSWORD")
+    @Column(name  = "PASSWORD", length = 63)
     private String password;
 
 

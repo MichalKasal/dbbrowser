@@ -112,6 +112,10 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDTO'
         '201':
           description: Created - new DB connection is stored
           links:
@@ -120,6 +124,10 @@ paths:
               parameters:
                 connectionID: $response.body#/id
               description: 'The `id` value returned in the response can be used as the `connectionID` parameter in `GET /connections/{connectionId}`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDTO'
         '400':
           description: Bad Request - malformed request that DO NOT comfor with validations
           content:
@@ -135,6 +143,11 @@ paths:
       description: Updates DB connection specified by ID
       tags:
         - Connection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionDTO'
     delete:
       summary: Delete DB connection by ID
       operationId: delete-connections-connectionID

@@ -4,9 +4,12 @@ import cz.kasal.dbbrowser.entity.ConnectionEnt;
 import cz.kasal.dbbrowser.mapper.ConnectionMapper;
 import cz.kasal.dbbrowser.model.ConnectionDTO;
 import cz.kasal.dbbrowser.repository.ConnectionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 
+@Service
 public class ConnectionsServiceImpl implements ConnectionsService {
 
 
@@ -14,7 +17,7 @@ public class ConnectionsServiceImpl implements ConnectionsService {
 
     private ConnectionMapper connectionMapper;
 
-
+    @Autowired
     public ConnectionsServiceImpl(ConnectionRepository connectionRepository, ConnectionMapper connectionMapper){
         this.connectionRepository = connectionRepository;
         this.connectionMapper = connectionMapper;
@@ -28,7 +31,7 @@ public class ConnectionsServiceImpl implements ConnectionsService {
     @Override
     public ConnectionDTO getConnection(Long connectionID) {
         return connectionRepository.findById(connectionID).map(connectionEnt -> connectionMapper.mapToDto(connectionEnt))
-                .orElseThrow(EntityNotFoundException::new) ;
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Connection with ID: %d not found", connectionID))) ;
     }
 
     @Override
@@ -37,9 +40,9 @@ public class ConnectionsServiceImpl implements ConnectionsService {
     }
 
     @Override
-    public ConnectionDTO updateConnection(ConnectionDTO connectionDTO) {
+    public ConnectionDTO updateConnection(ConnectionDTO connectionDTO, Long connectionId) {
        // in this demonstration locking is not implemented
-        ConnectionEnt connectionEntity = connectionRepository.findById(connectionDTO.getId())
+        ConnectionEnt connectionEntity = connectionRepository.findById(connectionId)
                .map(connectionEnt -> {
             connectionMapper.mapToEntity(connectionDTO);
             return connectionRepository.save(connectionEnt); })

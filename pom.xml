@@ -17,6 +17,7 @@
     <properties>
         <java.version>11</java.version>
         <start-class>cz.kasal.dbbrowser.DbbrowserApplication</start-class>
+        <spring-plugin.version>2.0.0.BUILD-SNAPSHOT</spring-plugin.version>
     </properties>
 
     <dependencies>
@@ -103,11 +104,24 @@
             <version>0.2.1</version>
         </dependency>
 
-        <dependency>
+      <!--  <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
             <version>1.1.2.RELEASE</version>
         </dependency>
+-->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.4.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.4.1.Final</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -117,7 +131,7 @@
             <plugin>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>5.0.0-beta2</version>
+                <version>4.3.1</version>
             <configuration>
                 <logToStderr>false</logToStderr>
                 <generatorName>spring</generatorName>

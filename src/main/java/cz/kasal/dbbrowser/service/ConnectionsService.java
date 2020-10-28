@@ -32,6 +32,6 @@ public interface ConnectionsService {
      * @param connectionDTO representation of connection object
      * @return  saved connection
      */
-    ConnectionDTO updateConnection(ConnectionDTO connectionDTO);
+    ConnectionDTO updateConnection(ConnectionDTO connectionDTO, Long connectionId);
 
 }
