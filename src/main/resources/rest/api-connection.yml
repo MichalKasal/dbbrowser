@@ -76,6 +76,200 @@ components:
           type: array
           items:
             type: string
+    SchemaDTO:
+      description: Represents information about database schema
+      type: object
+      properties:
+        catalog_name:
+          type: string
+          minLength: 1
+        schema_name:
+          type: string
+          minLength: 1
+        schema_owner:
+          type: string
+          minLength: 1
+        default_character_set_catalog:
+          type: string
+        default_character_set_schema:
+          type: string
+        default_character_set_name:
+          type: string
+        sql_path:
+          type: string
+      required:
+        - catalog_name
+        - schema_name
+        - schema_owner
+      title: SchemaDTO
+      x-examples:
+        example-1:
+          catalog_name: string
+          schema_name: string
+          schema_owner: string
+          default_character_set_catalog: string
+          default_character_set_schema: string
+          default_character_set_name: string
+          sql_path: string
+      x-tags:
+        - schema
+    TableDTO:
+      description: Represents info about database table
+      type: object
+      title: TableDTO
+      properties:
+        table_catalog:
+          type: string
+          minLength: 1
+        table_schema:
+          type: string
+          minLength: 1
+        table_name:
+          type: string
+          minLength: 1
+        table_type:
+          type: string
+          minLength: 1
+        self_referencing_column_name:
+          type: string
+        reference_generation:
+          type: string
+        user_defined_type_catalog:
+          type: string
+        user_defined_type_schema:
+          type: string
+        user_defined_type_name:
+          type: string
+        is_insertable_into:
+          type: string
+        is_typed:
+          type: string
+        commit_action:
+          type: string
+        hasindexes:
+          type: boolean
+        hasrules:
+          type: boolean
+        hastriggers:
+          type: boolean
+        rowsecurity:
+          type: boolean
+        tablespace:
+          type: string
+      required:
+        - table_catalog
+        - table_schema
+        - table_name
+        - table_type
+        - is_insertable_into
+        - is_typed
+        - hasindexes
+        - hasrules
+        - hastriggers
+        - rowsecurity
+      x-tags:
+        - table
+    ColumnDTO:
+      description: Provides information about columns in database table
+      type: object
+      title: ColumnDTO
+      x-tags:
+        - column
+      properties:
+        column_name:
+          type: string
+          minLength: 1
+        ordinal_position:
+          type: number
+        column_default:
+          type: string
+        is_nullable:
+          type: string
+          minLength: 1
+        data_type:
+          type: string
+          minLength: 1
+        character_maximum_length:
+          type: number
+        character_octet_length:
+          type: number
+        numeric_precision:
+          type: number
+        numeric_precision_radix:
+          type: number
+        numeric_scale:
+          type: number
+        datetime_precision:
+          type: number
+        interval_type:
+          type: number
+        interval_precision:
+          type: number
+        character_set_catalog:
+          type: string
+        character_set_schema:
+          type: string
+        character_set_name:
+          type: string
+        collation_catalog:
+          type: string
+        collation_schema:
+          type: string
+        collation_name:
+          type: string
+        domain_catalog:
+          type: string
+        domain_schema:
+          type: string
+        domain_name:
+          type: string
+        udt_catalog:
+          type: string
+          minLength: 1
+        udt_schema:
+          type: string
+          minLength: 1
+        udt_name:
+          type: string
+          minLength: 1
+        scope_catalog:
+          type: string
+        scope_schema:
+          type: string
+        scope_name:
+          type: string
+        maximum_cardinality:
+          type: number
+        dtd_identifier:
+          type: string
+          minLength: 1
+        is_self_referencing:
+          type: string
+          minLength: 1
+        is_identity:
+          type: string
+          minLength: 1
+        identity_generation:
+          type: string
+        identity_start:
+          type: string
+        identity_increment:
+          type: string
+        identity_maximum:
+          type: string
+        identity_minimum:
+          type: string
+        identity_cycle:
+          type: string
+          minLength: 1
+        is_generated:
+          type: string
+          minLength: 1
+        generation_expression:
+          type: string
+        is_updatable:
+          type: string
+          minLength: 1
 paths:
   '/connections/{connectionID}':
     parameters:
@@ -195,5 +389,121 @@ paths:
         description: DB Connection details
       tags:
         - Connection
+  '/connections/{connectionId}/schemas':
+    get:
+      summary: List schemas
+      tags:
+        - schema
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+      operationId: get-schemas
+      description: Lists all DB schemas with additional information
+    parameters:
+      - schema:
+          type: string
+        name: connectionId
+        in: path
+        required: true
+  '/connections/{connectionId}/schemas/{schemaName}/tables':
+    parameters:
+      - schema:
+          type: string
+        name: schemaName
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: connectionId
+        in: path
+        required: true
+    get:
+      summary: List tables in schema
+      tags:
+        - table
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableDTO'
+      operationId: get-tables
+      description: Lists all tables whitin a schema and provides additional information about each
+  '/connections/{connectionId}/schemas/{schemaName}/tables/{tableName}/columns':
+    parameters:
+      - schema:
+          type: string
+        name: schemaName
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: tableName
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: connectionId
+        in: path
+        required: true
+    get:
+      summary: List columns
+      tags:
+        - column
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColumnDTO'
+      operationId: get-columns
+      description: List all columns in database table and provides additional information about each
+  '/connections/{connectionId}/schemas/{schemaName}/tables/{tableName}/data':
+    parameters:
+      - schema:
+          type: string
+        name: connectionId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: schemaName
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: tableName
+        in: path
+        required: true
+    get:
+      summary: Preview data of table
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+              examples: {}
+      operationId: get-preview
+      description: Provides preview of stored data in table
 tags:
   - name: Connection
+  - name: column
+  - name: table
+  - name: schema

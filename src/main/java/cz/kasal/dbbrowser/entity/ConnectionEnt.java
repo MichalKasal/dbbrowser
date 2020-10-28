@@ -21,7 +21,6 @@ public class ConnectionEnt {
     @Column(name = "ID")
     private Long id;
 
-    @Min(3)
     @Column(name = "NAME", unique = true)
     private String name;
 
