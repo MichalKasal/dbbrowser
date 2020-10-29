@@ -2,3 +2,35 @@ databaseChangeLog:
   - changeset:
       id: 1
       author: MK
+      changes:
+        - createTable:
+            tableName: person
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(50)
+              - column:
+                  name: age
+                  type: int
+              - column:
+                  name: height
+                  type: int
+        - sql:
+            sql: insert into person (id, name, age, height) values (1, "One", 20, 170)
+        - sql:
+            sql: insert into person (id, name, age, height) values (1, "Two", 30, 177)
+        - sql:
+            sql: insert into person (id, name, age, height) values (1, "Three", 45, 190)
+        - sql:
+            sql: INSERT INTO public.connection (id, database_name, hostname, name, password, port, username) VALUES (1, 'postgres', 'localhost', 'Test', 'password', 5432, 'admin');
+
+
+
+

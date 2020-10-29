@@ -36,7 +36,7 @@ public class ConnectionsServiceImpl implements ConnectionsService {
 
     @Override
     public void deleteConnection(Long connectionID) {
-        connectionRepository.deleteById(connectionID);
+        connectionRepository.findById(connectionID).ifPresent(connectionEnt -> connectionRepository.delete(connectionEnt));
     }
 
     @Override
@@ -44,8 +44,10 @@ public class ConnectionsServiceImpl implements ConnectionsService {
        // in this demonstration locking is not implemented
         ConnectionEnt connectionEntity = connectionRepository.findById(connectionId)
                .map(connectionEnt -> {
-            connectionMapper.mapToEntity(connectionDTO);
-            return connectionRepository.save(connectionEnt); })
+                   connectionDTO.setId(connectionId);
+                   connectionEnt = connectionMapper.mapToEntity(connectionDTO);
+                   return connectionRepository.save(connectionEnt);
+               })
                .orElseGet(() -> connectionRepository.save(connectionMapper.mapToEntity(connectionDTO)));
        return connectionMapper.mapToDto(connectionEntity);
     }

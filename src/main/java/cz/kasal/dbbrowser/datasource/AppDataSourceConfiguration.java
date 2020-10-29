@@ -1,6 +1,7 @@
 package cz.kasal.dbbrowser.datasource;
 
 import cz.kasal.dbbrowser.entity.ConnectionEnt;
+import cz.kasal.dbbrowser.model.ConnectionDTO;
 import cz.kasal.dbbrowser.repository.ConnectionRepository;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.sql.DataSource;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Configuration
@@ -58,15 +60,18 @@ public class AppDataSourceConfiguration {
        if(requestAttributes != null) {
            Map<Object,String> at = (Map<Object,String>) requestAttributes.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
            if(at != null) {
-               ConnectionEnt connectionDTO = connectionRepository.findById(Long.parseLong(at.get("connectionId"))).get();
-               DataSourceBuilder<?> dsBuilder = DataSourceBuilder.create();
-               StringBuilder stringBuilder = new StringBuilder();
-               stringBuilder.append("jdbc:postgresql://").append(connectionDTO.getHostname()).append(":").append(connectionDTO.getPort()).append("/").append(connectionDTO.getDatabaseName());
-               dsBuilder.driverClassName("org.postgresql.Driver");
-               dsBuilder.url(stringBuilder.toString());
-               dsBuilder.username(connectionDTO.getUsername());
-               dsBuilder.password(connectionDTO.getPassword());
-               return dsBuilder.build();
+               Optional<ConnectionEnt> connectionDTOOpt = connectionRepository.findById(Long.parseLong(at.get("connectionId")));
+               if (connectionDTOOpt.isPresent()) {
+                   ConnectionEnt connection = connectionDTOOpt.get();
+                   DataSourceBuilder<?> dsBuilder = DataSourceBuilder.create();
+                   StringBuilder stringBuilder = new StringBuilder();
+                   stringBuilder.append("jdbc:postgresql://").append(connection.getHostname()).append(":").append(connection.getPort()).append("/").append(connection.getDatabaseName());
+                   dsBuilder.driverClassName("org.postgresql.Driver");
+                   dsBuilder.url(stringBuilder.toString());
+                   dsBuilder.username(connection.getUsername());
+                   dsBuilder.password(connection.getPassword());
+                   return dsBuilder.build();
+               }
            }
         }
            throw new BeanCreationException("Cannot continue processing request");
