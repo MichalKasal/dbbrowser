@@ -31,7 +31,6 @@ public class ListingRepositoryImpl implements ListingRepository {
             "join " +
             "pg_tables pgt ON tab.table_name = pgt.tablename " +
             "                     and tab.table_schema = pgt.schemaname " +
-            "                     and tab.table_catalog = pgt.tableowner " +
             "                     and tab.table_schema = ?";
 
 
@@ -56,7 +55,7 @@ public class ListingRepositoryImpl implements ListingRepository {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public ListingRepositoryImpl(@Qualifier("createdJdbcTemplate") JdbcTemplate jdbcTemplate) {
+    public ListingRepositoryImpl(@Qualifier("clientJdbcTemplate") JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -81,7 +80,7 @@ public class ListingRepositoryImpl implements ListingRepository {
             String query = String.format(PREVIEW_DATA, schemaName, tableName);
             return this.jdbcTemplate.queryForList(query);
         } else {
-            throw new EntityNotFoundException(String.format("Table with table name %s and schema %s doesn't exist", schemaName, tableName));
+            throw new EntityNotFoundException(String.format("Table with table name %s and schema %s doesn't exist", tableName, schemaName));
         }
     }
 

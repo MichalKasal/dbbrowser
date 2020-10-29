@@ -1,9 +1,10 @@
 package cz.kasal.dbbrowser.service;
 
 import cz.kasal.dbbrowser.model.ConnectionDTO;
-import org.springframework.stereotype.Service;
 
-@Service
+/**
+ * Provides logic for processing CRUD connection requests
+ */
 public interface ConnectionsService {
 
     /**

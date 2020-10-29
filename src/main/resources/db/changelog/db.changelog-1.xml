@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1 - CREATE PERSON TABLE" author="MK">
+        <createTable tableName="person">
+            <column name="id" type="INTEGER">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)"/>
+            <column name="age" type="INTEGER"/>
+            <column name="height" type="INTEGER"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2 - CREATE CONNECTION table" author="MK">
+        <sql dbms="postgresql" endDelimiter=";">
+            create table connection
+            (
+            id bigint GENERATED ALWAYS AS IDENTITY
+            constraint connection_pkey
+            primary key,
+            database_name varchar(63),
+            hostname varchar(255),
+            name varchar(255)
+            constraint uk_boj4rcgfevb82rpvflfekrdlc
+            unique,
+            password varchar(63),
+            port integer
+            constraint connection_port_check
+            check ((port &gt;= 1) AND (port &lt;= 65535)),
+            username varchar(63)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="3 - ADD INIT DATA" author="MK">
+        <sql dbms="postgresql" endDelimiter=";">
+            insert into person (id, name, age, height) values (1, 'One', 20, 170);
+            insert into person (id, name, age, height) values (2, 'Two', 30, 177);
+            insert into person (id, name, age, height) values (3, 'Three', 45, 190);
+            INSERT INTO connection (database_name, hostname, name, password, port, username) VALUES ('test',
+            'localhost', 'Test', 'password', 35432, 'postgres');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

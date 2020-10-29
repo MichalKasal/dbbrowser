@@ -2,10 +2,10 @@ package cz.kasal.dbbrowser.api;
 
 import cz.kasal.dbbrowser.connection.api.ConnectionsApiDelegate;
 import cz.kasal.dbbrowser.model.ColumnDTO;
+import cz.kasal.dbbrowser.model.ColumnStatisticsDTO;
 import cz.kasal.dbbrowser.model.ConnectionDTO;
 import cz.kasal.dbbrowser.model.SchemaDTO;
 import cz.kasal.dbbrowser.model.TableDTO;
-import cz.kasal.dbbrowser.model.ColumnStatisticsDTO;
 import cz.kasal.dbbrowser.model.TableStatisticsDTO;
 import cz.kasal.dbbrowser.service.ConnectionsService;
 import cz.kasal.dbbrowser.service.DatabaseListingService;
@@ -18,17 +18,30 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.afford;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * Implements ConnectionApiDelegate using delegate pattern and serves as entrypoint for processing user request
+ * in this demo application.
+ * <p>
+ * For documentation see generated swagged docs
+ */
 @Service
 public class ConnectionsApi implements ConnectionsApiDelegate {
 
-    private ConnectionsService connectionsService;
+    private final ConnectionsService connectionsService;
 
-    private DatabaseListingService databaseListingService;
+    private final DatabaseListingService databaseListingService;
 
+    /**
+     * Constructor injecting all services containing business logic needed for request processing in this class
+     * @param connectionsService     service contains logic of processing DB connection requests
+     * @param databaseListingService service contains logic of processing DB listing requests
+     */
     @Autowired
-    public ConnectionsApi(ConnectionsService connectionsService, DatabaseListingService databaseListingService){
+    public ConnectionsApi(ConnectionsService connectionsService, DatabaseListingService databaseListingService) {
         this.connectionsService = connectionsService;
         this.databaseListingService = databaseListingService;
     }
@@ -81,7 +94,7 @@ public class ConnectionsApi implements ConnectionsApiDelegate {
 
     @Override
     public ResponseEntity<List<Object>> getPreview(Long connectionId, String schemaName, String tableName) {
-        List<Object> preview = databaseListingService.previewTable(schemaName, tableName);
+        List preview = databaseListingService.previewTable(schemaName, tableName);
         return ResponseEntity.ok(preview);
     }
 
@@ -110,6 +123,11 @@ public class ConnectionsApi implements ConnectionsApiDelegate {
         return ResponseEntity.ok(columnStatisticsDTOS);
     }
 
+    /**
+     * Adds HATEOAS metadata to ConnectionDTO objects
+     *
+     * @param connectionDTO input object
+     */
     private void addHypermediaConnection(ConnectionDTO connectionDTO) {
         connectionDTO.add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getConnectionsConnectionID(connectionDTO.getId())).withSelfRel()
                 .andAffordance(afford(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).putConnectionsConnectionID(connectionDTO.getId(), null)))
@@ -117,12 +135,27 @@ public class ConnectionsApi implements ConnectionsApiDelegate {
         ).add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getSchemas(connectionDTO.getId())).withRel("schemas"));
     }
 
+    /**
+     * Adds HATEOAS metadata to SchemaDTO objects
+     *
+     * @param schemaDTO    input object
+     * @param connectionId ID of connection used in request
+     * @return SchemaDTO containing HATEOAS metadata
+     */
     private SchemaDTO addHypermediaSchema(SchemaDTO schemaDTO, Long connectionId) {
         schemaDTO.add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getTables(schemaDTO.getSchemaName(), connectionId)).withRel("tables"))
                 .add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getTableStatistics(connectionId, schemaDTO.getSchemaName())).withRel("statistics"));
         return schemaDTO;
     }
 
+    /**
+     * Adds HATEOAS metadata to TableDTO objects
+     *
+     * @param tableDTO     input object
+     * @param schemaName   name of schema used in request
+     * @param connectionId connection id used in request
+     * @return TableDTO containing HATEOAS metadata
+     */
     private TableDTO addHypermediaTable(TableDTO tableDTO, String schemaName, Long connectionId) {
         tableDTO.add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getColumns(schemaName, tableDTO.getTableName(), connectionId)).withRel("columns"))
                 .add(linkTo(methodOn(cz.kasal.dbbrowser.connection.api.ConnectionsApi.class).getPreview(connectionId, schemaName, tableDTO.getTableName())).withRel("data"))

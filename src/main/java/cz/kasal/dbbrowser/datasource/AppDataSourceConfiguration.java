@@ -1,9 +1,7 @@
 package cz.kasal.dbbrowser.datasource;
 
 import cz.kasal.dbbrowser.entity.ConnectionEnt;
-import cz.kasal.dbbrowser.model.ConnectionDTO;
 import cz.kasal.dbbrowser.repository.ConnectionRepository;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,10 +24,21 @@ import java.util.Map;
 import java.util.Optional;
 
 
+/**
+ * Configures datasources used in application.
+ * Primary datasource is used for manipulating internal data of Connection objects,
+ * createdDataSource is used for querying databases specified by Connection object.
+ */
 @Configuration
 @ComponentScan(basePackages = "cz.kasal.dbbrowser")
 public class AppDataSourceConfiguration {
 
+    /**
+     * Primary datasource is used for manipulating internal data of Connection objects.
+     * Cofigured in application.properties
+     *
+     * @return datasource properties from application.properties
+     */
     @Bean
     @Primary
     @ConfigurationProperties("spring.datasource")
@@ -38,12 +47,22 @@ public class AppDataSourceConfiguration {
     }
 
 
+    /**
+     * Primary datasource
+     *
+     * @return configured DataSource
+     */
     @Bean
     @Primary
     public DataSource primaryDataSource() {
         return primaryDataSourceProperties().initializeDataSourceBuilder().build();
     }
 
+    /**
+     * Primary jdbcTemplate
+     *
+     * @return configured JdbcTemplate
+     */
     @Bean
     @Primary
     public JdbcTemplate jdbcTemplate() {
@@ -51,36 +70,53 @@ public class AppDataSourceConfiguration {
     }
 
 
+    /**
+     * Creates datasource used in ListingRepository for querying databases
+     * specified by user request (using connection ID)
+     *
+     * @param connectionRepository connectionRepository is used for obtaining data
+     *                             about DB connection parameters
+     * @return configured datasource
+     */
     @Lazy
     @Bean
     @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
     public DataSource createdDataSource(ConnectionRepository connectionRepository) {
-
-       RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-       if(requestAttributes != null) {
-           Map<Object,String> at = (Map<Object,String>) requestAttributes.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
-           if(at != null) {
-               Optional<ConnectionEnt> connectionDTOOpt = connectionRepository.findById(Long.parseLong(at.get("connectionId")));
-               if (connectionDTOOpt.isPresent()) {
-                   ConnectionEnt connection = connectionDTOOpt.get();
-                   DataSourceBuilder<?> dsBuilder = DataSourceBuilder.create();
-                   StringBuilder stringBuilder = new StringBuilder();
-                   stringBuilder.append("jdbc:postgresql://").append(connection.getHostname()).append(":").append(connection.getPort()).append("/").append(connection.getDatabaseName());
-                   dsBuilder.driverClassName("org.postgresql.Driver");
-                   dsBuilder.url(stringBuilder.toString());
-                   dsBuilder.username(connection.getUsername());
-                   dsBuilder.password(connection.getPassword());
-                   return dsBuilder.build();
-               }
-           }
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes != null) {
+            Map<Object, String> at = (Map<Object, String>) requestAttributes.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+            if (at != null) {
+                Optional<ConnectionEnt> connectionDTOOpt = connectionRepository.findById(Long.parseLong(at.get("connectionId")));
+                if (connectionDTOOpt.isPresent()) {
+                    System.out.println(connectionDTOOpt.toString());
+                    ConnectionEnt connection = connectionDTOOpt.get();
+                    DataSourceBuilder<?> dsBuilder = DataSourceBuilder.create();
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("jdbc:postgresql://").append(connection.getHostname()).append(":").append(connection.getPort()).append("/").append(connection.getDatabaseName());
+                    dsBuilder.driverClassName("org.postgresql.Driver");
+                    dsBuilder.url(stringBuilder.toString());
+                    dsBuilder.username(connection.getUsername());
+                    dsBuilder.password(connection.getPassword());
+                    return dsBuilder.build();
+                }
+                throw new IllegalStateException("Cannot continue processing request, connection not found for " + at.get("connectionId"));
+            }
+            throw new IllegalStateException("Cannot continue processing request, bad request format");
         }
-           throw new BeanCreationException("Cannot continue processing request");
+        throw new IllegalStateException("Cannot continue processing request");
     }
 
+    /**
+     * Configured JDBCTemplate for querying user specified databases
+     *
+     * @param connectionRepository connectionRepository is used for obtaining data
+     *                             about DB connection parameters
+     * @return configured jdbc template
+     */
     @Lazy
-    @Qualifier("createdJdbcTemplate")
+    @Qualifier("clientJdbcTemplate")
     @Bean
-    public JdbcTemplate createdJdbcTemplate(ConnectionRepository connectionRepository) {
+    public JdbcTemplate clientJdbcTemplate(ConnectionRepository connectionRepository) {
         return new JdbcTemplate(createdDataSource(connectionRepository));
     }
 

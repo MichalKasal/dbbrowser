@@ -16,13 +16,12 @@ import java.util.Map;
 @Service
 public class DatabaseListingServiceImpl implements DatabaseListingService {
 
-    private ListingRepositoryImpl listingRepository;
+    private final ListingRepositoryImpl listingRepository;
 
     @Autowired
     public DatabaseListingServiceImpl (ListingRepositoryImpl listingRepository){
         this.listingRepository = listingRepository;
     }
-
 
     @Override
     public List<SchemaDTO> getAllSchemas() {
