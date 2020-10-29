@@ -52,11 +52,6 @@
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
@@ -189,10 +184,7 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <version>3.8.0</version>
-            <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
     <build>
@@ -205,7 +197,6 @@
                 <logToStderr>false</logToStderr>
                 <generatorName>spring</generatorName>
                 <generateSupportingFiles>true</generateSupportingFiles>
-                 <ignoreFileOverride>${project.basedir}/src/main/resources/.openapi-generator-ignore</ignoreFileOverride>
                 <configOptions>
                     <dateLibrary>java8-localdatetime</dateLibrary>
                     <serializableModel>true</serializableModel>
