@@ -1,11 +1,9 @@
 package cz.kasal.dbbrowser.datasource;
 
 import cz.kasal.dbbrowser.entity.ConnectionEnt;
-import cz.kasal.dbbrowser.model.ConnectionDTO;
 import cz.kasal.dbbrowser.repository.ConnectionRepository;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -21,8 +19,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.util.UriBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.sql.DataSource;
 import java.util.Map;

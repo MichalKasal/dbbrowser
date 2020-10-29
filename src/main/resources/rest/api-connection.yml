@@ -270,6 +270,42 @@ components:
         is_updatable:
           type: string
           minLength: 1
+    ColumnStatisticsDTO:
+      title: ColumnStatisticsDTO
+      type: object
+      properties:
+        column:
+          type: string
+          description: Name of table column
+        min:
+          type: string
+          description: Minimum value of column
+        max:
+          type: string
+          description: Maximum value of column
+        avg:
+          type: string
+          description: Average value of column
+        median:
+          type: string
+          description: Median value of column
+      description: Represents statistics of one column
+    TableStatisticsDTO:
+      title: TableStatisticsDTO
+      type: object
+      description: Represents statistics about one database table
+      properties:
+        table_name:
+          type: string
+          description: Name of database table
+        number_of_rows:
+          type: integer
+          minimum: 0
+          description: Number of records in table
+        number_of_attributes:
+          type: integer
+          minimum: 0
+          description: Number of columns in table
 paths:
   '/connections/{connectionID}':
     parameters:
@@ -407,22 +443,30 @@ paths:
       description: Lists all DB schemas with additional information
     parameters:
       - schema:
-          type: string
+          type: integer
+          format: int64
+          minimum: 1
         name: connectionId
         in: path
         required: true
+        description: Connection ID used for retrieving data
   '/connections/{connectionId}/schemas/{schemaName}/tables':
     parameters:
       - schema:
           type: string
+          maxLength: 63
         name: schemaName
         in: path
         required: true
+        description: Name of database schema
       - schema:
-          type: string
+          type: integer
+          format: int64
+          minimum: 1
         name: connectionId
         in: path
         required: true
+        description: Connection ID used for retrieving data
     get:
       summary: List tables in schema
       tags:
@@ -442,19 +486,27 @@ paths:
     parameters:
       - schema:
           type: string
+          maxLength: 63
         name: schemaName
         in: path
         required: true
+        description: Name of database schema
       - schema:
           type: string
+          maxLength: 63
         name: tableName
         in: path
         required: true
+        description: Name of database table
       - schema:
-          type: string
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
         name: connectionId
         in: path
         required: true
+        description: Connection ID used for retrieving data
     get:
       summary: List columns
       tags:
@@ -473,23 +525,32 @@ paths:
   '/connections/{connectionId}/schemas/{schemaName}/tables/{tableName}/data':
     parameters:
       - schema:
-          type: string
+          type: integer
+          format: int64
+          minimum: 1
         name: connectionId
         in: path
         required: true
+        description: Connection ID used for retrieving data
       - schema:
           type: string
+          maxLength: 63
         name: schemaName
         in: path
         required: true
+        description: Name of database schema
       - schema:
           type: string
+          maxLength: 63
         name: tableName
         in: path
         required: true
+        description: Name of database table
     get:
       summary: Preview data of table
-      tags: []
+      tags:
+        - table
+        - preview
       responses:
         '200':
           description: OK
@@ -502,8 +563,83 @@ paths:
               examples: {}
       operationId: get-preview
       description: Provides preview of stored data in table
+  '/connections/{connectionId}/schemas/{schemaName}/tables/{tableName}/statistics':
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+        name: connectionId
+        in: path
+        required: true
+        description: Connection ID used for retrieving data
+      - schema:
+          type: string
+          maxLength: 63
+        name: schemaName
+        in: path
+        required: true
+        description: Name of database schema
+      - schema:
+          type: string
+          maxLength: 63
+        name: tableName
+        in: path
+        required: true
+        description: Name of database table
+    get:
+      summary: Table columns statistics
+      tags:
+        - table
+        - statistics
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColumnStatisticsDTO'
+          description: OK
+      operationId: get-table-column-statistics
+      description: 'Computes min, max, avg, median value of each column in table where acceptable'
+  '/connections/{connectionId}/schemas/{schemaName}/statistics':
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+        name: connectionId
+        in: path
+        required: true
+        description: Connection ID used for retrieving data
+      - schema:
+          type: string
+          maxLength: 63
+        name: schemaName
+        in: path
+        required: true
+        description: Name of database schema
+    get:
+      summary: Table statistics
+      tags:
+        - statistics
+        - table
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableStatisticsDTO'
+      operationId: get-table-statistics
+      description: Provides statistical information about each table in given schema
 tags:
   - name: Connection
   - name: column
   - name: table
   - name: schema
+  - name: preview
+  - name: statistics
